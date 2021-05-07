@@ -1,15 +1,15 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'spree/adyen/version'
+require 'spree/uqpay/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "spree-adyen"
-  spec.version       = Spree::Adyen::VERSION
+  spec.name          = "spree-uqpay"
+  spec.version       = Spree::Uqpay::VERSION
   spec.authors       = ["Washington Luiz"]
   spec.email         = ["huoxito@gmail.com"]
-  spec.description   = "Plugs Adyen Payment Gateway into Spree Stores"
-  spec.summary       = "Plugs Adyen Payment Gateway into Spree Stores"
+  spec.description   = "Plugs UQPay Payment Gateway into Spree Stores"
+  spec.summary       = "Plugs UQPay Payment Gateway into Spree Stores"
   spec.homepage      = ""
   spec.license       = "MIT"
 
@@ -27,6 +27,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'sass-rails', '~> 4.0.2'
   spec.add_development_dependency 'sqlite3'
 
-  spec.add_runtime_dependency "adyen", "~> 1.4.0"
   spec.add_runtime_dependency "spree_core", ">= 2.4.0.beta"
 end
