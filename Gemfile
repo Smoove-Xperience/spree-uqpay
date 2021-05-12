@@ -9,6 +9,8 @@ gem 'pry-rails'
 gem 'vcr'
 gem 'webmock'
 gem "faraday", "~> 1.3"
+gem 'openssl'
+gem 'base64'
 
 # Specify your gem's dependencies in spree-adyen.gemspec
 gemspec
