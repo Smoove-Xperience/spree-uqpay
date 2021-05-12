@@ -1,6 +1,8 @@
 module Spree
   # Gateway for china union payment method
   class Gateway::UqpayChinaUnion < Gateway
+    include UqpayCommon
+
     def source_required?
       false
     end
