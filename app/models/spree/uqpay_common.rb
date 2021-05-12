@@ -4,18 +4,34 @@ module Spree
     
     included do        
       preference :uqpay_host, :string        
-      preference :uqpay_private_key, :string
-      preference :uqpay_payment_merchant_id, :string
+      preference :uqpay_private_key, :text
+      preference :uqpay_merchant_id, :string
       preference :uqpay_callback_url, :string
       preference :uqpay_return_url, :string
 
-      PAYMENT_URL = "#{uqpay_host}/pay"
-      CANCEL_URL = "#{uqpay_host}/cancel"
-      REFUND_URL = "#{uqpay_host}/refund"
+      def uqpay_host
+        ENV['UQPAY_HOST'] || preferred_uqpay_host
+      end
+
+      def uqpay_private_key
+        ENV['UQPAY_PRIVATE_KEY'] || preferred_uqpay_private_key
+      end
+
+      def uqpay_merchant_id
+        ENV['UQPAY_MERCHANT_ID'] || preferred_uqpay_merchant_id
+      end
+
+      def uqpay_callback_url
+        ENV['UQPAY_CALLBACK_URL'] || preferred_uqpay_callback_url
+      end
+
+      def uqpay_return_url
+        ENV['UQPAY_RETURN_URL'] || preferred_uqpay_return_url
+      end
   
       def payment_data(purchase_params)          
         data = {
-          'merchant_id': uqpay_payemnt_merchant_id,
+          'merchant_id': uqpay_merchant_id,
           'transtype': "pay",
           # 'orderid': "",
           # 'methodid': 2001,
@@ -34,7 +50,7 @@ module Spree
 
       def cancel_data(cancel_params)
         data = {
-          'merchant_id': uqpay_payemnt_merchant_id,
+          'merchant_id': uqpay_merchant_id,
           'transtype': "cancel",
           # 'orderid': "",
           # 'uqorderid': "",            
@@ -48,7 +64,7 @@ module Spree
 
       def refund_data(refund_params)
         {
-          'merchant_id': uqpay_payemnt_merchant_id,
+          'merchant_id': uqpay_merchant_id,
           'transtype': "refund",
           # 'orderid': "",
           # 'uqorderid': "",            
@@ -81,24 +97,25 @@ module Spree
       end
 
       def pay
-        send(PAYMENT_URL, payment_data)          
+        make_request("#{uqpay_host}/pay", payment_data)          
       end
 
       def cancel
-        send(CANCEL_URL, cancel_data)
+        make_request("#{uqpay_host}/cancel", cancel_data)
       end
 
       def refund
-        send(REFUND_URL, refund_data)
+        make_request("#{uqpay_host}/refund", refund_data)
       end
 
       private
-      def send(url, data)
+
+      def make_request(url, data)
         resp = Faraday.post(url) do |req|
           req.headers['Accept'] = 'application/json'
           req.headers['Content-Type'] = 'application/x-www-form-urlencoded'
 
-          req.params = data.merge{'sign': create_signature(data)}
+          req.params = data.merge({'sign': create_signature(data)})
         end
 
         resp
