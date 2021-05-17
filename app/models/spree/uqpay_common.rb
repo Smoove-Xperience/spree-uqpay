@@ -2,12 +2,15 @@ module Spree
   module UqpayCommon
     extend ActiveSupport::Concern
     
-    included do        
+    included do
+      attr_accessor :uqpay_host, :uqpay_private_key, :uqpay_merchant_id, :uqpay_callback_url, :uqpay_return_url, :uqpay_client_ip, :server, :test_mode
+
       preference :uqpay_host, :string        
       preference :uqpay_private_key, :text
       preference :uqpay_merchant_id, :string
       preference :uqpay_callback_url, :string
       preference :uqpay_return_url, :string
+      preference :uqpay_client_ip, :string
 
       def uqpay_host
         ENV['UQPAY_HOST'] || preferred_uqpay_host
@@ -28,29 +31,56 @@ module Spree
       def uqpay_return_url
         ENV['UQPAY_RETURN_URL'] || preferred_uqpay_return_url
       end
-  
-      def payment_data(purchase_params)          
-        data = {
-          'merchant_id': uqpay_merchant_id,
-          'transtype': "pay",
-          # 'orderid': "",
-          # 'methodid': 2001,
-          # 'amount': "0.01",
-          # 'currency': "SGD",
-          'transname': "Purchase - #{purchase_params[:orderid]}",
-          # 'quantity': "1",
-          'returnurl': uqpay_return_url,
-          'callbackurl': uqpay_callback_url,
-          'date': Time.zone.now.to_i,
-          'clienttype': "1",
-          'clientip': request.remote_ip,
-          'signtype': "RSA",
-        }.merge(purchase_params)
+
+      def uqpay_client_ip
+        ENV['UQPAY_CLIENT_IP'] || preferred_uqpay_client_ip
       end
 
-      def cancel_data(cancel_params)
-        data = {
-          'merchant_id': uqpay_merchant_id,
+      def payment_source_class
+        Spree::UqpayPaymentSource
+      end
+
+      def create_signature(data)
+        data = data.sort_by { |key| key }.to_h
+        encoded_data = data.to_a.map { |item| item.join "=" }.join "&"
+
+        digest = OpenSSL::Digest::SHA1.new
+        pkey = OpenSSL::PKey::RSA.new uqpay_private_key
+        signature = pkey.sign(digest, encoded_data)
+        
+        Base64.strict_encode64(signature)
+      end
+
+      def verify_signature(data)
+        data = data.sort_by { |key| key }.to_h
+        encoded_data = data.to_a.map { |item| item.join "=" }.join "&"
+
+        digest = OpenSSL::Digest::SHA1.new
+        pkey = OpenSSL::PKey::RSA.new uqpay_private_key
+        pub_key = pkey.public_key
+        
+        pub_key.verify(digest, signature, encoded_data)
+      end
+
+      def pay(params)
+        payment_data = {
+          merchantid: uqpay_merchant_id,
+          transtype: "pay",
+          transname: "Purchase - #{params[:orderid]}",
+          returnurl: uqpay_return_url,
+          callbackurl: uqpay_callback_url,
+          date: Time.zone.now.to_i,
+          clienttype: "1",
+          clientip: uqpay_client_ip,
+          quantity: "1",
+        }.merge(params)
+
+        make_request("#{uqpay_host}/pay", payment_data)          
+      end
+
+      def cancel(params)
+        cancel_data = {
+          'merchantid': uqpay_merchant_id,
           'transtype': "cancel",
           # 'orderid': "",
           # 'uqorderid': "",            
@@ -58,13 +88,14 @@ module Spree
           'callbackurl': uqpay_callback_url,
           'date': Time.zone.now.to_i,            
           'clienttype': '1',
-          'signtype': 'RSA'         
-        }.merge(cancel_params)
+        }.merge(params)
+  
+        make_request("#{uqpay_host}/cancel", cancel_data)
       end
 
-      def refund_data(refund_params)
-        {
-          'merchant_id': uqpay_merchant_id,
+      def refund(params)
+        refund_data = {
+          'merchantid': uqpay_merchant_id,
           'transtype': "refund",
           # 'orderid': "",
           # 'uqorderid': "",            
@@ -72,50 +103,22 @@ module Spree
           'date': Time.zone.now.to_i,
           'callbackurl': uqpay_callback_url,
           'clienttype': '1',
-          'signtype': 'RSA'                      
-        }.merge(refund_params)
-      end
+        }.merge(params)
 
-      def create_signature(data)
-        data = data.sort_by { |key| key }.reverse.to_h
-
-        digest = OpenSSL::Digest::SHA1.new
-        pkey = OpenSSL::PKey::RSA.new uqpay_private_key
-        signature = pkey.sign(digest, data)
-        
-        Base64.strict_encode64(signature)
-      end
-
-      def verify_signature(data)
-        data = data.sort_by { |key| key }.reverse.to_h
-
-        digest = OpenSSL::Digest::SHA1.new
-        pkey = OpenSSL::PKey::RSA.new uqpay_private_key
-        pub_key = pkey.public_key
-        
-        pub_key.verify(digest, signature, data)
-      end
-
-      def pay
-        make_request("#{uqpay_host}/pay", payment_data)          
-      end
-
-      def cancel
-        make_request("#{uqpay_host}/cancel", cancel_data)
-      end
-
-      def refund
         make_request("#{uqpay_host}/refund", refund_data)
       end
 
       private
 
       def make_request(url, data)
-        resp = Faraday.post(url) do |req|
+        data = data.merge({
+          signtype: "RSA",
+          sign: create_signature(data)
+        })
+
+        resp = Faraday.post(url, data) do |req|
           req.headers['Accept'] = 'application/json'
           req.headers['Content-Type'] = 'application/x-www-form-urlencoded'
-
-          req.params = data.merge({'sign': create_signature(data)})
         end
 
         resp
