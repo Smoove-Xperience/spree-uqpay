@@ -36,11 +36,6 @@ module Spree
       "uqpay_china_union"
     end
 
-    # def process(*args)
-    #  @args = args
-    #  binding.pry
-    # end
-
     def purchase(amount, source, options = {})
       response = self.pay({
         'orderid': options[:order_id],
@@ -70,7 +65,7 @@ module Spree
       ActiveMerchant::Billing::Response.new(true, 'Mollie will automatically capture the amount after creating a shipment.')
     end
 
-    def capture(amount, transaction_details, options = {})
+    def capture(*_args)
       ActiveMerchant::Billing::Response.new(true, 'Mollie will automatically capture the amount after creating a shipment.')
     end
 

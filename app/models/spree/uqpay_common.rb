@@ -43,7 +43,7 @@ module Spree
       def create_signature(data)
         data = data.sort_by { |key| key }.to_h
         encoded_data = data.to_a.map { |item| item.join "=" }.join "&"
-
+                    
         digest = OpenSSL::Digest::SHA1.new
         pkey = OpenSSL::PKey::RSA.new uqpay_private_key
         signature = pkey.sign(digest, encoded_data)
@@ -52,7 +52,12 @@ module Spree
       end
 
       def verify_signature(data)
+        signature = Base64.decode64(data["sign"])
+        
+        data = data.except("signtype", "sign")
+        
         data = data.sort_by { |key| key }.to_h
+
         encoded_data = data.to_a.map { |item| item.join "=" }.join "&"
 
         digest = OpenSSL::Digest::SHA1.new
@@ -60,6 +65,8 @@ module Spree
         pub_key = pkey.public_key
         
         pub_key.verify(digest, signature, encoded_data)
+
+        true
       end
 
       def pay(params)
