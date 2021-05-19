@@ -1,3 +1,3 @@
 Spree::Core::Engine.routes.draw do
-    resource :uqpay_payment_verification, only: [:create]
+  resource :uqpay_payment_verifications, only: [:create]
 end
