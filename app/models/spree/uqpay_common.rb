@@ -7,6 +7,7 @@ module Spree
 
       preference :uqpay_host, :string        
       preference :uqpay_private_key, :text
+      preference :uqpay_public_key, :text
       preference :uqpay_merchant_id, :string
       preference :uqpay_callback_url, :string
       preference :uqpay_return_url, :string
@@ -18,6 +19,10 @@ module Spree
 
       def uqpay_private_key
         ENV['UQPAY_PRIVATE_KEY'] || preferred_uqpay_private_key
+      end
+
+      def uqpay_public_key
+        ENV['UQPAY_PUBLIC_KEY'] || preferred_uqpay_public_key
       end
 
       def uqpay_merchant_id
@@ -51,22 +56,20 @@ module Spree
         Base64.strict_encode64(signature)
       end
 
-      def verify_signature(data)
+      def verify_signature(data)        
         signature = Base64.decode64(data["sign"])
         
-        data = data.except("signtype", "sign")
+        encoded_data = data.except("signtype", "sign")
         
-        data = data.sort_by { |key| key }.to_h
+        encoded_data = encoded_data.sort_by { |key| key }.to_h
 
-        encoded_data = data.to_a.map { |item| item.join "=" }.join "&"
-
+        encoded_data = encoded_data.to_a.map { |item| item.join "=" }.join "&"
+        
         digest = OpenSSL::Digest::SHA1.new
-        pkey = OpenSSL::PKey::RSA.new uqpay_private_key
+        pkey = OpenSSL::PKey::RSA.new uqpay_public_key
         pub_key = pkey.public_key
-        
-        pub_key.verify(digest, signature, encoded_data)
 
-        true
+        pub_key.verify(digest, signature, encoded_data)
       end
 
       def pay(params)
