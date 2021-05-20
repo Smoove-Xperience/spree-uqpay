@@ -43,14 +43,20 @@ module Spree
     end
 
     def transition_to_paid!
-      return if @payment.completed? 
+      return if @payment.completed?
 
       @payment.complete!
-      complete_order!       
+
+      return if @payment.order.completed?
+
+      @payment.order.finalize!
+      @payment.order.update_attributes(state: 'complete', completed_at: Time.now)     
     end
 
     def transition_to_failed!
       @payment.failure! unless @payment.failed?
+      
+      @payment.order.update(state: 'payment', completed_at: nil) unless @payment.order.paid_or_authorized?
     end  
 
     def permitted_params

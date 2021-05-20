@@ -1,6 +1,6 @@
 module Spree
   # Gateway for china union payment method
-  class Gateway::UqpayChinaUnion < Gateway
+  class Gateway::UqpayChinaUnion < PaymentMethod
     include UqpayCommon
 
     def provider_class
@@ -12,14 +12,14 @@ module Spree
     end
 
     def auto_capture?
-      true
+      false
     end
 
     # Spree usually grabs these from a Credit Card object but when using
     # Adyen Hosted Payment Pages where we wouldn't keep # the credit card object
     # as that entered outside of the store forms
     def actions
-      %w{capture void}
+      %w{void}
     end
 
     # Indicates whether its possible to void the payment.
@@ -36,7 +36,7 @@ module Spree
       "uqpay_china_union"
     end
 
-    def purchase(amount, source, options = {})
+    def authorize(amount, source, options = {})
       response = self.pay({
         'orderid': options[:order_id],
         'methodid': 2001,
@@ -54,19 +54,14 @@ module Spree
         source.uqorderid = response_body["uqorderid"]
         source.state = response_body["state"]
         source.save!
-        ActiveMerchant::Billing::Response.new(true, 'Order created')
+        ActiveMerchant::Billing::Response.new(true, 'Uqpay will automatically capture the amount after creating a shipment.')
       else
-        ActiveMerchant::Billing::Response.new(false, "Order could not be created")
+        ActiveMerchant::Billing::Response.new(false, 'Failed to create uqpay payment')
       end
-      
-    end
-
-    def authorize(*_args)
-      ActiveMerchant::Billing::Response.new(true, 'Mollie will automatically capture the amount after creating a shipment.')
     end
 
     def capture(*_args)
-      ActiveMerchant::Billing::Response.new(true, 'Mollie will automatically capture the amount after creating a shipment.')
+      ActiveMerchant::Billing::Response.new(true, 'Uqpay will automatically capture the amount after creating a shipment.')
     end
 
     def void(amount, transaction_details, options = {})
