@@ -1,0 +1,7 @@
+:pidfile: tmp/pids/sidekiq.pid
+:concurrency: 15
+production:
+  :concurrency: 15
+:queues:
+  - default
+  - payment

@@ -1,0 +1,4 @@
+check_payment_status_every_5m:
+  cron: "*/5 * * * *"
+  class: "CheckPaymentStatusWorker"
+  queue: "payment"
