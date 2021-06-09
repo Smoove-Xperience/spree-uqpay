@@ -22,9 +22,7 @@ module Spree
 
         def create_initializers
           template "check_payment_status_worker.rb", "app/workers/check_payment_status_worker.rb"
-          template "sidekiq.rb", "config/initializers/sidekiq.rb"
           template "schedule.yml", "config/schedule.yml"
-          template "sidekiq.yml", "config/sidekiq.yml"
         end
 
         def add_migrations
