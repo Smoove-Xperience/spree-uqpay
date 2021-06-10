@@ -14,10 +14,10 @@ Gem::Specification.new do |s|
   s.files = [".gitignore".freeze, "Gemfile".freeze, "LICENSE.txt".freeze, "README.md".freeze, "Rakefile".freeze, "app/models/spree/gateway/uqpay_china_union.rb".freeze, "app/views/spree/checkout/payment/_uqpay_china_union.html.erb".freeze, "config/routes.rb".freeze, "lib/spree-uqpay.rb".freeze, "lib/spree/uqpay.rb".freeze, "lib/spree/uqpay/engine.rb".freeze, "lib/spree/uqpay/version.rb".freeze, "spree-uqpay.gemspec".freeze]
   s.homepage = "".freeze
   s.licenses = ["MIT".freeze]
-  s.rubygems_version = "3.0.3".freeze
+  s.rubygems_version = "3.0.9".freeze
   s.summary = "Plugs UQPay Payment Gateway into Spree Stores".freeze
 
-  s.installed_by_version = "3.0.3" if s.respond_to? :installed_by_version
+  s.installed_by_version = "3.0.9" if s.respond_to? :installed_by_version
 
   if s.respond_to? :specification_version then
     s.specification_version = 4
