@@ -40,7 +40,7 @@ module Spree
       response = self.pay({
         'orderid': options[:order_id],
         'methodid': 2001,
-        'amount': amount / 100,
+        'amount': (amount.to_f / 100).round(2),
         'currency': options[:currency],
       })
 
