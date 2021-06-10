@@ -54,9 +54,11 @@ module Spree
     end
 
     def transition_to_failed!
-      @payment.failure! unless @payment.failed?
-      
-      @payment.order.update(state: 'payment', completed_at: nil) unless @payment.order.paid_or_authorized?
+      return if @payment.failed?
+
+      @payment.failure! 
+      @payment.source.update(state: permitted_params[:state])
+      @payment.order.update(shipment_state: "canceled", payment_state: "failed")
     end  
 
     def permitted_params
