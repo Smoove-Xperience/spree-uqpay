@@ -119,17 +119,15 @@ module Spree
       end
 
       def check_payment_status(source)
-        payment_method = source.payment_method
-        
-        if source.uqorderid.present? && source.date.to_i <= (100.minutes.ago.to_i * 1000)
+        if source.uqorderid.present? && source.date.to_i <= (60.minutes.ago.to_i * 1000)
           query_data = {
-            merchantid: payment_method.uqpay_merchant_id,
+            merchantid: uqpay_merchant_id,
             transtype: "query",
             uqorderid: source.uqorderid,
             date: source.date
           }
 
-          response = make_request("#{payment_method.uqpay_host}/query", query_data)
+          response = make_request("#{uqpay_host}/query", query_data)
 
           if response.status == 200
             parsed_body = JSON.parse(response.body)
@@ -142,9 +140,9 @@ module Spree
                 transition_to_failed!
               when "Failed"          
                 transition_to_failed!
+            end
 
-              source.update(state: parsed_body["state"])
-            end 
+            source.update(state: parsed_body["state"])
           end
         end
       end
