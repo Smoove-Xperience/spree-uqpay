@@ -54,21 +54,14 @@ module Spree
         source.uqorderid = response_body["uqorderid"]
         source.state = response_body["state"]
         source.save!
-        ActiveMerchant::Billing::Response.new(true, 'Uqpay will automatically capture the amount after creating a shipment.')
+        ActiveMerchant::Billing::Response.new(true, 'Uqpay payment created.')
       else
-        ActiveMerchant::Billing::Response.new(false, 'Failed to create uqpay payment')
+        ActiveMerchant::Billing::Response.new(false, 'Failed to create uqpay payment.')
       end
     end
 
     def capture(*_args)
       ActiveMerchant::Billing::Response.new(true, 'Uqpay will automatically capture the amount after creating a shipment.')
-    end
-
-    def void(amount, transaction_details, options = {})
-      @amount = amount
-      @transaction_details = transaction_details
-      @options = options
-      binding.pry
     end
   end
 end

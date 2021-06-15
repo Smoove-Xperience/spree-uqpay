@@ -3,7 +3,7 @@ module Spree
     extend ActiveSupport::Concern
     
     included do
-      attr_accessor :uqpay_host, :uqpay_private_key, :uqpay_merchant_id, :uqpay_callback_url, :uqpay_return_url, :uqpay_client_ip, :server, :test_mode
+      attr_accessor :uqpay_host, :uqpay_private_key, :uqpay_merchant_id, :uqpay_callback_url, :uqpay_return_url, :uqpay_client_ip
 
       preference :uqpay_host, :string        
       preference :uqpay_private_key, :text
@@ -118,25 +118,33 @@ module Spree
         make_request("#{uqpay_host}/refund", refund_data)
       end
 
-      def check_payment_status(order)
-        payment_source = order.payments.first.source
-        payment_method = order.payments.first.payment_method
+      def check_payment_status(source)
+        payment_method = source.payment_method
         
-        if payment_source.uqorderid.present? && payment_source.date.to_i <= (100.minutes.ago.to_i * 1000)
+        if source.uqorderid.present? && source.date.to_i <= (100.minutes.ago.to_i * 1000)
           query_data = {
             merchantid: payment_method.uqpay_merchant_id,
             transtype: "query",
-            uqorderid: payment_source.uqorderid,
-            date: payment_source.date
+            uqorderid: source.uqorderid,
+            date: source.date
           }
 
           response = make_request("#{payment_method.uqpay_host}/query", query_data)
-          query = JSON.parse(response.body)
-          
-          if payment_source.uqorderid == query["uqorderid"] && query["state"] == "Closed"
-            order.update(shipment_state: "canceled", payment_state: "failed")
-            order.payments.first.update(state: "failed")
-            payment_source.update(state: "Closed")
+
+          if response.status == 200
+            parsed_body = JSON.parse(response.body)
+            @payment = source.payment
+
+            case parsed_body["state"]
+              when "Success"
+                transition_to_paid!      
+              when "Closed"          
+                transition_to_failed!
+              when "Failed"          
+                transition_to_failed!
+
+              source.update(state: parsed_body["state"])
+            end 
           end
         end
       end
@@ -156,7 +164,19 @@ module Spree
 
         resp
       end
+
+      def transition_to_paid!
+        return if @payment.completed?
+  
+        @payment.complete!
+      end
+  
+      def transition_to_failed!
+        return if @payment.failed?
+  
+        @payment.failure!
+        @payment.order.update(shipment_state: "canceled")
+      end
     end
   end
 end
-  
