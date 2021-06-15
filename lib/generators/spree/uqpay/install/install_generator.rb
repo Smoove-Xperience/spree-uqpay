@@ -17,16 +17,12 @@ module Spree
         end
 
         def create_migrations
-          migration_template "migration.rb", "db/migrate/create_spree_uqpay_payment_sources.rb", migration_version: migration_version
+          migration_template "create_spree_stripe_payment_sources.rb", "db/migrate/create_spree_uqpay_payment_sources.spree_uqpay.rb", migration_version: migration_version
         end
 
         def create_initializers
           template "check_payment_status_worker.rb", "app/workers/check_payment_status_worker.rb"
           template "schedule.yml", "config/schedule.yml"
-        end
-
-        def add_migrations
-          run 'bundle exec rake railties:install:migrations'
         end
 
         def run_migrations

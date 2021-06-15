@@ -13,7 +13,6 @@ module Spree
 
       def self.activate
         Spree::PermittedAttributes.source_attributes << :methodid
-        Spree::Api::ApiHelpers.payment_source_attributes << :channelinfo
       end
 
       config.to_prepare &method(:activate).to_proc
