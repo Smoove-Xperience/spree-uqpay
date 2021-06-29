@@ -9,6 +9,7 @@ module Spree
 
       initializer "spree.spree-uqpay.payment_methods", :after => "spree.register.payment_methods" do |app|
         app.config.spree.payment_methods << Gateway::UqpayChinaUnion
+        app.config.spree.payment_methods << Gateway::UqpayAlipay
       end
 
       def self.activate
