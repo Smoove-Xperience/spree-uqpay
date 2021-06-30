@@ -2,6 +2,14 @@ module Spree
   # Gateway for china union payment method
   class Gateway::UqpayWechat < PaymentMethod
     include UqpayCommon
+    
+    attr_accessor :uqpay_sub_app_id
+    
+    preference :uqpay_sub_app_id, :string
+
+    def uqpay_sub_app_id
+      ENV['UQPAY_SUB_APP_ID'] || preferred_uqpay_sub_app_id
+    end
 
     def provider_class
       self.class
@@ -42,6 +50,7 @@ module Spree
         'methodid': 2000,
         'amount': (amount.to_f / 100).round(2),
         'currency': options[:currency],
+        "channelinfo": {sub_appid: uqpay_sub_app_id}.to_json
       })
 
       if (response.status == 200)
