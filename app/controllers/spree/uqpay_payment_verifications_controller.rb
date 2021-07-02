@@ -2,6 +2,12 @@ module Spree
   class UqpayPaymentVerificationsController < BaseController    
     skip_before_action :verify_authenticity_token, only: [:create]
 
+    PAYMENT_METHODS = { 
+      "2000": "Spree::Gateway::UqpayWechat", 
+      "2001":  "Spree::Gateway::UqpayChinaUnion", 
+      "2002": "Spree::Gateway::UqpayAlipay" 
+    }
+
     def create            
       return head(:bad_request) unless payment_method.verify_signature(permitted_params.to_h)
 
@@ -31,7 +37,7 @@ module Spree
     private
 
     def payment_method
-      Spree::PaymentMethod.find_by_type 'Spree::Gateway::UqpayChinaUnion'
+      Spree::PaymentMethod.find_by_type PAYMENT_METHODS[permitted_params["methodid"].to_sym]
     end
 
     def transition_to_pending!
