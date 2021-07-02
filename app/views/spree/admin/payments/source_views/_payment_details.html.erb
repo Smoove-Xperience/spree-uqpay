@@ -1,0 +1,43 @@
+<% if payment.source.present? %>
+<fieldset data-hook="spree_payment_source">
+  <legend>Payment</legend>
+  <table class="table table-condensed table-bordered">
+    <tr>
+      <th width="20%">Payment Number</th>
+      <td><%= payment.number %></td>
+    </tr>
+    <tr>
+      <th width="20%">Payment Method</th>
+      <td><%= payment.payment_method_name%></td>
+    </tr>
+    <tr>
+      <th width="20%">Payment State</th>
+      <td><%= payment.state.humanize%></td>
+    </tr>
+    <tr>
+      <th width="20%">Created at</th>
+      <td><%= payment.created_at %></td>
+    </tr>
+  </table>
+
+  <legend>Payment Source</legend>
+  <table class="table table-condensed table-bordered">
+    <tr>
+      <th width="20%">Uqorder Id</th>
+      <td><%= payment.payment_source.uqorderid %></td>
+    </tr>
+    <tr>
+      <th width="20%">status</th>
+      <td><%= payment.payment_source.state %></td>
+    </tr>
+    <tr>
+      <th width="20%">Method Id</th>
+      <td><%= payment.payment_source.methodid %></td>
+    </tr>
+  </table>
+</fieldset>
+<% else %>
+  <div class="alert alert-danger">
+    <%= Spree.t(:no_transactions) %>
+  </div>
+<% end %>
