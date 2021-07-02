@@ -88,7 +88,7 @@ module Spree
         make_request("#{uqpay_host}/pay", payment_data)          
       end
 
-      def cancel_pay(params)
+      def cancel(params)
         cancel_data = {
           'merchantid': uqpay_merchant_id,
           'transtype': "cancel",
@@ -96,17 +96,13 @@ module Spree
           'clienttype': '1',
         }.merge(params)
   
-        make_request("#{uqpay_host}/refund", cancel_data)
+        make_request("#{uqpay_host}/cancel", cancel_data)
       end
 
       def refund(params)
         refund_data = {
           'merchantid': uqpay_merchant_id,
           'transtype': "refund",
-          # 'orderid': "",
-          # 'uqorderid': "",            
-          # 'amount': "0.01",
-          'date': Time.zone.now.to_i,
           'callbackurl': uqpay_callback_url,
           'clienttype': '1',
         }.merge(params)

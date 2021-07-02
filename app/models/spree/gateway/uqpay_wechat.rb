@@ -44,6 +44,19 @@ module Spree
       "uqpay_wechat"
     end
 
+    def cancel(payment_source)
+      response = self.refund({
+        'orderid': "#{payment_source.payment.order.number}-#{payment_source.payment.number}",
+        'uqorderid': payment_source.uqorderid,
+        'amount': "%.2f" % payment_source.payment.amount.to_f,
+        'date': DateTime.now.strftime('%Q').to_s,   
+      })
+      
+      if (response.status == 200)
+        payment_source.payment
+      end
+    end
+
     def authorize(amount, source, options = {})
       response = self.pay({
         'orderid': options[:order_id],

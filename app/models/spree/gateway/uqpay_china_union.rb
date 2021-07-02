@@ -37,15 +37,15 @@ module Spree
     end
 
     def cancel(payment_source)
-      response = self.cancel_pay({
+      response = self.refund({
         'orderid': "#{payment_source.payment.order.number}-#{payment_source.payment.number}",
         'uqorderid': payment_source.uqorderid,
-        'amount': (payment_source.payment.amount.to_f).round(2),
+        'amount': "%.2f" % payment_source.payment.amount.to_f,
         'date': DateTime.now.strftime('%Q').to_s,   
       })
       
       if (response.status == 200)
-        
+        payment_source.payment
       end
     end
 
