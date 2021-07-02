@@ -36,6 +36,18 @@ module Spree
       "uqpay_alipay"
     end
 
+    def cancel(payment_source)
+      response = self.cancel({
+        'orderid': options[:order_id],
+        'uqorderid': payment_source.uqorderid,
+        'amount': (amount.to_f / 100).round(2),
+      })
+      
+      if (response.status == 200)
+        
+      end
+    end
+
     def authorize(amount, source, options = {})
       response = self.pay({
         'orderid': options[:order_id],

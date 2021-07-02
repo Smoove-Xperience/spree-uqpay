@@ -88,19 +88,15 @@ module Spree
         make_request("#{uqpay_host}/pay", payment_data)          
       end
 
-      def cancel(params)
+      def cancel_pay(params)
         cancel_data = {
           'merchantid': uqpay_merchant_id,
           'transtype': "cancel",
-          # 'orderid': "",
-          # 'uqorderid': "",            
-          # 'amount': "0.01",
-          'callbackurl': uqpay_callback_url,
-          'date': Time.zone.now.to_i,            
+          'callbackurl': uqpay_callback_url,         
           'clienttype': '1',
         }.merge(params)
   
-        make_request("#{uqpay_host}/cancel", cancel_data)
+        make_request("#{uqpay_host}/refund", cancel_data)
       end
 
       def refund(params)
@@ -154,7 +150,7 @@ module Spree
           signtype: "RSA",
           sign: create_signature(data)
         })
-
+        
         resp = Faraday.post(url, data) do |req|
           req.headers['Accept'] = 'application/json'
           req.headers['Content-Type'] = 'application/x-www-form-urlencoded'
