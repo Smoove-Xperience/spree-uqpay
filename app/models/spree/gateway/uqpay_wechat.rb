@@ -53,7 +53,9 @@ module Spree
       })
       
       if (response.status == 200)
-        payment_source.payment
+        ActiveMerchant::Billing::Response.new(true, 'Uqpay refund success.')
+      else
+        ActiveMerchant::Billing::Response.new(false, 'Uqpay refund failed.')    
       end
     end
 
