@@ -44,6 +44,25 @@ module Spree
       "uqpay_wechat"
     end
 
+    def cancel(payment_source)
+      ActiveMerchant::Billing::Response.new(true, 'Uqpay payment cancellation success.')
+    end
+
+    def refund(payment_source)
+      response = self.refund_payment({
+        'orderid': "#{payment_source.payment.order.number}-#{payment_source.payment.number}",
+        'uqorderid': payment_source.uqorderid,
+        'amount': "%.2f" % payment_source.payment.amount.to_f,
+        'date': DateTime.now.strftime('%Q').to_s,   
+      })
+      
+      if (response.status == 200)
+        ActiveMerchant::Billing::Response.new(true, 'Uqpay payment refund success.')
+      else
+        ActiveMerchant::Billing::Response.new(false, 'Uqpay payment refund failed.')        
+      end
+    end
+
     def authorize(amount, source, options = {})
       response = self.pay({
         'orderid': options[:order_id],
