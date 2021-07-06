@@ -95,18 +95,18 @@ module Spree
           'callbackurl': uqpay_callback_url,         
           'clienttype': '1',
         }.merge(params)
-  
+        
         make_request("#{uqpay_host}/cancel", cancel_data)
       end
-
-      def refund(params)
+      
+      def refund_payment(params)
         refund_data = {
           'merchantid': uqpay_merchant_id,
           'transtype': "refund",
           'callbackurl': uqpay_callback_url,
           'clienttype': '1',
         }.merge(params)
-
+        
         make_request("#{uqpay_host}/refund", refund_data)
       end
 
@@ -151,7 +151,7 @@ module Spree
           req.headers['Accept'] = 'application/json'
           req.headers['Content-Type'] = 'application/x-www-form-urlencoded'
         end
-
+        
         resp
       end
 
