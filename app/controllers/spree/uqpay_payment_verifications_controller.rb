@@ -51,7 +51,7 @@ module Spree
     end
 
     def transition_to_failed!
-      return if @payment.failed?
+      return if @payment.failed? || @payment.state == "void"
 
       @payment.failure!
       @payment.order.update(shipment_state: "canceled")

@@ -49,9 +49,10 @@ module Spree
       })
       
       if (response.status == 200)
-        ActiveMerchant::Billing::Response.new(true, 'Uqpay payment refund success.')
+        ActiveMerchant::Billing::Response.new(true, "Uqpay payment refund success.")
       else
-        ActiveMerchant::Billing::Response.new(false, 'Uqpay payment refund failed.')        
+        error = JSON.parse(response.body)
+        ActiveMerchant::Billing::Response.new(false, "Uqpay payment refund failed. Error #{error["code"]}: #{error["message"]} (#{error["status"]}).")
       end
     end
 
@@ -75,7 +76,7 @@ module Spree
         source.save!
         ActiveMerchant::Billing::Response.new(true, 'Uqpay payment created.')
       else
-        ActiveMerchant::Billing::Response.new(false, 'Failed to create uqpay payment.')
+        ActiveMerchant::Billing::Response.new(false, 'Failed to create uqpay payment. Error #{error["code"]}: #{error["message"]} (#{error["status"]}).')
       end
     end
 
